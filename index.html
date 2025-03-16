@@ -382,7 +382,7 @@
         canvasWidth: 500,
         canvasHeight: 500,
         gridSize: 20,
-        initialSpeed: 100,
+        initialSpeed: 150,
       };
 
       // Game State
@@ -425,6 +425,9 @@
         "YOUR SKILLS ARE DOWN THE TOILET!",
         "SNAKE? MORE LIKE PLUMBER NOW!",
         "YOU'VE BEEN DUMPED!",
+        "DEATH FROM POOP!",
+        "YOU'RE A POOPY MESS!",
+        "YOU LIKE IT, DON'T YOU?",
       ];
 
       // DOM Elements
@@ -931,7 +934,9 @@
           newDirection &&
           isValidDirectionChange(peekInputQueue(), newDirection)
         ) {
-          gameState.inputQueue.push(newDirection);
+          if (gameState.inputQueue.length < 6) {
+            gameState.inputQueue.push(newDirection);
+          }
         }
       });
 
