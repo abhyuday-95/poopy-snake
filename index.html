@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poopy Snake</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #222;
+        font-family: "Courier New", monospace;
+        color: #0f0;
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .game-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80vh;
+      }
+
+      h1 {
+        text-shadow: 3px 3px 0px rgba(0, 255, 0, 0.3);
+        letter-spacing: 2px;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+
+      canvas {
+        border: 3px solid #0f0;
+        background-color: #000;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+      }
+
+      .controls {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #111;
+        border: 2px solid #0f0;
+        width: 500px;
+        display: none; /* Hide by default */
+        flex-wrap: wrap;
+        justify-content: space-between;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+      }
+
+      .controls div {
+        margin: 5px;
+        text-align: left;
+      }
+
+      button {
+        background-color: #000;
+        color: #0f0;
+        border: 2px solid #0f0;
+        padding: 5px 10px;
+        margin: 5px;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background-color: #0f0;
+        color: #000;
+      }
+
+      select,
+      input {
+        background-color: #000;
+        color: #0f0;
+        border: 1px solid #0f0;
+        padding: 3px;
+        font-family: "Courier New", monospace;
+      }
+
+      .score-board {
+        display: flex;
+        justify-content: space-between;
+        width: 500px;
+        margin-top: 10px;
+        background-color: #111;
+        border: 2px solid #0f0;
+        padding: 5px;
+      }
+
+      .game-over {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border: 3px solid #f00;
+        text-align: center;
+        color: #f00;
+        font-size: 24px;
+        visibility: hidden;
+        width: 300px;
+        z-index: 102;
+      }
+
+      .game-over button {
+        border-color: #f00;
+        color: #f00;
+      }
+
+      .game-over button:hover {
+        background-color: #f00;
+        color: #000;
+      }
+
+      .gear-icon {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #0f0;
+        background: none;
+        border: none;
+        padding: 10px;
+        z-index: 101;
+      }
+
+      .gear-icon:hover {
+        transform: rotate(90deg);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 99;
+      }
+
+      .keyboard-controls {
+        display: block;
+      }
+
+      .mobile-guide {
+        display: none;
+      }
+
+      .mobile-controls {
+        display: none;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        width: 92%;
+        touch-action: manipulation;
+      }
+
+      .mobile-controls button {
+        width: 100%;
+        height: 20vh;
+        font-size: 24px;
+        border-radius: 4px;
+        background: rgba(0, 255, 0, 0.2);
+        border: 2px solid #0f0;
+        color: #0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .mobile-controls button:active {
+        background: rgba(0, 255, 0, 0.4);
+      }
+
+      .welcome-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 103;
+      }
+
+      .welcome-content {
+        text-align: center;
+        padding: 20px;
+        max-width: 600px;
+      }
+
+      .welcome-content h2 {
+        color: #0f0;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+      }
+
+      .welcome-content p {
+        color: #0f0;
+        font-size: 1.2rem;
+        margin: 10px 0;
+        line-height: 1.5;
+      }
+
+      .welcome-content .controls-guide {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      .controls-guide div {
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #0f0;
+        border-radius: 5px;
+      }
+
+      .big-start-btn {
+        font-size: 2rem;
+        padding: 15px 40px;
+        margin-top: 20px;
+        background: none;
+        color: #0f0;
+        border: 3px solid #0f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .big-start-btn:hover {
+        background: #0f0;
+        color: #000;
+        transform: scale(1.1);
+      }
+
+      @media (max-width: 600px) {
+        canvas {
+          width: 90%;
+          height: auto;
+        }
+        .score-board {
+          width: 90%;
+        }
+        .keyboard-controls {
+          display: none;
+        }
+        .mobile-guide {
+          display: block;
+        }
+        .mobile-controls {
+          display: flex;
+        }
+        .welcome-content {
+          padding: 10px;
+          font-size: 0.9rem;
+        }
+        .welcome-content h2 {
+          font-size: 2rem;
+        }
+        .controls-guide {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-content">
+        <h2>Welcome to POOPY SNAKE!</h2>
+        <p>Navigate your snake, eat food, but watch out for your own poop!</p>
+
+        <div class="controls-guide">
+          <div class="keyboard-controls">
+            <h3>Keyboard Controls:</h3>
+            <p>↑ or W = Up</p>
+            <p>↓ or S = Down</p>
+            <p>← or A = Left</p>
+            <p>→ or D = Right</p>
+            <p>P = Pause</p>
+            <p>R = Restart</p>
+          </div>
+          <div class="mobile-guide">
+            <h3>Mobile Controls:</h3>
+            <p>< = Turn Left</p>
+            <p>> = Turn Right</p>
+            <p>(Relative to current direction)</p>
+          </div>
+        </div>
+
+        <button class="big-start-btn" id="welcomeStartBtn">START GAME</button>
+      </div>
+    </div>
+
+    <div class="game-container">
+      <div class="container">
+        <h1>POOPY SNAKE</h1>
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="score-board">
+          <div>SCORE: <span id="score">0</span></div>
+          <div>HIGH SCORE: <span id="high-score">0</span></div>
+          <div>LEVEL: <span id="level">1</span></div>
+        </div>
+        <canvas id="game-canvas" width="500" height="500"></canvas>
+      </div>
+      <div class="mobile-controls">
+        <button id="turnLeftBtn"><</button>
+        <button id="turnRightBtn">></button>
+      </div>
+    </div>
+
+    <div class="game-over" id="game-over-screen">
+      <h2>GAME OVER</h2>
+      <p>Your Score: <span id="final-score">0</span></p>
+      <p id="death-reason"></p>
+      <button id="restart-btn">PLAY AGAIN</button>
+    </div>
+
+    <script>
+      // Game Configuration
+      const config = {
+        isBorderMode: false,
+        difficultyLevel: 1,
+        difficultyProgressionMultiplier: 1.0,
+        poopAfterConsumingItemCount: 12,
+        shouldPoopDisappear: false,
+        poopDisappearAfterTimeInMs: 10000,
+        poopTimeThreshold: 30000,
+        canvasWidth: 500,
+        canvasHeight: 500,
+        gridSize: 20,
+        initialSpeed: 100,
+      };
+
+      // Game State
+      let gameState = {
+        snake: [],
+        direction: "right",
+        nextDirection: "right",
+        food: { x: 0, y: 0 },
+        score: 0,
+        highScore: 0,
+        level: 1,
+        isGameOver: false,
+        isPaused: false,
+        gameLoop: null,
+        foodEaten: 0,
+        poops: [],
+        lastTime: 0,
+        deltaTime: 0,
+        currentSpeed: 0,
+        lastPoopTime: 0,
+        inputQueue: [],
+        lastInputTime: 0,
+        inputCooldown: 50, // New: Cooldown between inputs in milliseconds
+      };
+
+      // Witty game over messages
+      const gameOverMessages = [
+        "WHAT A CRAPPY WAY TO DIE!",
+        "YOU'VE HIT A POOPETASTROPHE!",
+        "GAME OVER: NUMBER TWO FOR YOU!",
+        "YOU STEPPED IN DOO-DOO!",
+        "POO-TALLY DESTROYED!",
+        "THAT WAS A STINKY MOVE!",
+        "OH CRAP, YOU LOST!",
+        "FECAL MATTER FATALITY!",
+        "WIPED OUT BY YOUR OWN WASTE!",
+        "YOU'VE BEEN FLUSHED!",
+        "THAT'S SOME BAD POOP LUCK!",
+        "TOO POOPED TO PLAY!",
+        "YOUR SKILLS ARE DOWN THE TOILET!",
+        "SNAKE? MORE LIKE PLUMBER NOW!",
+        "YOU'VE BEEN DUMPED!",
+      ];
+
+      // DOM Elements
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+      const scoreElement = document.getElementById("score");
+      const highScoreElement = document.getElementById("high-score");
+      const levelElement = document.getElementById("level");
+      const gameOverScreen = document.getElementById("game-over-screen");
+      const finalScoreElement = document.getElementById("final-score");
+      const deathReasonElement = document.getElementById("death-reason");
+      const restartBtn = document.getElementById("restart-btn");
+      const progressionValueSpan = document.getElementById("progressionValue");
+
+      // Initialize high score from localStorage
+      gameState.highScore = localStorage.getItem("poopySnakeHighScore") || 0;
+      highScoreElement.textContent = gameState.highScore;
+
+      // Game Initialization
+      function initGame() {
+        // Reset game state
+        gameState.snake = [
+          { x: 5, y: 10 },
+          { x: 4, y: 10 },
+          { x: 3, y: 10 },
+        ];
+        gameState.direction = "right";
+        gameState.nextDirection = "right";
+        gameState.score = 0;
+        gameState.level = 1;
+        gameState.isGameOver = false;
+        gameState.isPaused = false;
+        gameState.foodEaten = 0;
+        gameState.poops = [];
+        gameState.lastTime = 0;
+        gameState.lastPoopTime = Date.now();
+
+        // Set initial speed based on difficulty
+        gameState.currentSpeed =
+          config.initialSpeed - (config.difficultyLevel - 1) * 30;
+
+        // Update display
+        scoreElement.textContent = gameState.score;
+        levelElement.textContent = gameState.level;
+
+        // Place initial food
+        placeFood();
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Hide game over screen
+        gameOverScreen.style.visibility = "hidden";
+
+        // Start game loop
+        if (gameState.gameLoop) {
+          cancelAnimationFrame(gameState.gameLoop);
+        }
+        gameState.lastTime = performance.now();
+        gameLoop();
+      }
+
+      function gameLoop(timestamp = performance.now()) {
+        if (gameState.isGameOver || gameState.isPaused) {
+          return;
+        }
+
+        gameState.gameLoop = requestAnimationFrame(gameLoop);
+
+        // Calculate delta time
+        gameState.deltaTime = timestamp - gameState.lastTime;
+
+        // Only update game state at the current speed
+        if (gameState.deltaTime >= gameState.currentSpeed) {
+          // Process input queue on every frame for responsive controls
+          processInputQueue();
+
+          gameState.lastTime = timestamp;
+
+          // Remove expired poops
+          if (config.shouldPoopDisappear) {
+            gameState.poops = gameState.poops.filter(
+              (poop) => !poop.shouldRemove
+            );
+          }
+
+          // Check for time-based pooping
+          const timeSinceLastPoop = Date.now() - gameState.lastPoopTime;
+          if (
+            timeSinceLastPoop >= config.poopTimeThreshold &&
+            gameState.snake.length > 1
+          ) {
+            const tail = gameState.snake[gameState.snake.length - 1];
+            const poop = {
+              x: tail.x,
+              y: tail.y,
+              timestamp: Date.now(),
+              shouldRemove: false,
+            };
+
+            if (config.shouldPoopDisappear) {
+              setTimeout(() => {
+                poop.shouldRemove = true;
+              }, config.poopDisappearAfterTimeInMs);
+            }
+
+            gameState.poops.push(poop);
+            gameState.lastPoopTime = Date.now();
+          }
+
+          // Update game state
+          update();
+
+          // Render game
+          render();
+        }
+      }
+
+      function update() {
+        // Update direction
+        gameState.direction = gameState.nextDirection;
+
+        // Move snake
+        const head = { ...gameState.snake[0] };
+
+        switch (gameState.direction) {
+          case "up":
+            head.y--;
+            break;
+          case "right":
+            head.x++;
+            break;
+          case "down":
+            head.y++;
+            break;
+          case "left":
+            head.x--;
+            break;
+        }
+
+        // Handle borderless mode (wrap around)
+        if (!config.isBorderMode) {
+          if (head.x < 0)
+            head.x = Math.floor(config.canvasWidth / config.gridSize) - 1;
+          if (head.x >= Math.floor(config.canvasWidth / config.gridSize))
+            head.x = 0;
+          if (head.y < 0)
+            head.y = Math.floor(config.canvasHeight / config.gridSize) - 1;
+          if (head.y >= Math.floor(config.canvasHeight / config.gridSize))
+            head.y = 0;
+        }
+
+        // Check for collision with walls in border mode
+        if (
+          config.isBorderMode &&
+          (head.x < 0 ||
+            head.x >= Math.floor(config.canvasWidth / config.gridSize) ||
+            head.y < 0 ||
+            head.y >= Math.floor(config.canvasHeight / config.gridSize))
+        ) {
+          gameOver("YOU HIT THE WALL!");
+          return;
+        }
+
+        // Check for collision with self
+        for (let i = 0; i < gameState.snake.length; i++) {
+          if (
+            gameState.snake[i].x === head.x &&
+            gameState.snake[i].y === head.y
+          ) {
+            gameOver("YOU ATE YOURSELF!");
+            return;
+          }
+        }
+
+        // Check for collision with poops
+        for (let i = 0; i < gameState.poops.length; i++) {
+          if (
+            gameState.poops[i].x === head.x &&
+            gameState.poops[i].y === head.y
+          ) {
+            gameOver("YOU STEPPED IN POOP!");
+            return;
+          }
+        }
+
+        // Add new head
+        gameState.snake.unshift(head);
+
+        // Check if food is eaten
+        if (head.x === gameState.food.x && head.y === gameState.food.y) {
+          // Increase score
+          gameState.score += 10;
+          scoreElement.textContent = gameState.score;
+
+          // Update high score if needed
+          if (gameState.score > gameState.highScore) {
+            gameState.highScore = gameState.score;
+            highScoreElement.textContent = gameState.highScore;
+            localStorage.setItem("poopySnakeHighScore", gameState.highScore);
+          }
+
+          // Increase level every 50 points
+          if (gameState.score % 50 === 0) {
+            gameState.level++;
+            levelElement.textContent = gameState.level;
+
+            // Increase speed
+            gameState.currentSpeed *=
+              1 - 0.05 * config.difficultyProgressionMultiplier;
+          }
+
+          // Place new food
+          placeFood();
+
+          // Increment food eaten counter
+          gameState.foodEaten++;
+
+          // Check if snake should poop
+          if (shouldPoop()) {
+            gameState.foodEaten = 0;
+            gameState.lastPoopTime = Date.now();
+
+            const tail = gameState.snake.pop();
+            const poop = {
+              x: tail.x,
+              y: tail.y,
+              timestamp: Date.now(),
+              shouldRemove: false,
+            };
+
+            if (config.shouldPoopDisappear) {
+              setTimeout(() => {
+                poop.shouldRemove = true;
+              }, config.poopDisappearAfterTimeInMs);
+            }
+
+            gameState.poops.push(poop);
+          }
+        } else {
+          // Remove tail if no food was eaten
+          gameState.snake.pop();
+        }
+      }
+
+      function render() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid (optional for retro look)
+        ctx.strokeStyle = "#111";
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x < canvas.width; x += config.gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += config.gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+
+        // Draw snake
+        ctx.fillStyle = "#0f0";
+        for (let i = 0; i < gameState.snake.length; i++) {
+          // Draw snake segments with slightly different shades for the head
+          if (i === 0) {
+            ctx.fillStyle = "#00ff00"; // Bright green for head
+          } else {
+            const shade = 180 - ((i * 5) % 100); // Gradient effect
+            ctx.fillStyle = `rgb(0, ${shade}, 0)`;
+          }
+
+          // Draw rounded rectangle for snake segments
+          const x = gameState.snake[i].x * config.gridSize;
+          const y = gameState.snake[i].y * config.gridSize;
+          const size = config.gridSize - 2;
+
+          // Draw eyes on the head
+          if (i === 0) {
+            ctx.fillRect(x + 1, y + 1, size, size);
+
+            // Draw eyes
+            ctx.fillStyle = "#000";
+            let eyeX1, eyeX2, eyeY1, eyeY2;
+
+            switch (gameState.direction) {
+              case "up":
+                eyeX1 = x + 5;
+                eyeY1 = y + 5;
+                eyeX2 = x + size - 5;
+                eyeY2 = y + 5;
+                break;
+              case "right":
+                eyeX1 = x + size - 5;
+                eyeY1 = y + 5;
+                eyeX2 = x + size - 5;
+                eyeY2 = y + size - 5;
+                break;
+              case "down":
+                eyeX1 = x + 5;
+                eyeY1 = y + size - 5;
+                eyeX2 = x + size - 5;
+                eyeY2 = y + size - 5;
+                break;
+              case "left":
+                eyeX1 = x + 5;
+                eyeY1 = y + 5;
+                eyeX2 = x + 5;
+                eyeY2 = y + size - 5;
+                break;
+            }
+
+            ctx.beginPath();
+            ctx.arc(eyeX1, eyeY1, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(eyeX2, eyeY2, 2, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(x + 1, y + 1, size, size);
+          }
+        }
+
+        // Draw food
+        ctx.fillStyle = "#f00"; // Red food
+        const foodX = gameState.food.x * config.gridSize;
+        const foodY = gameState.food.y * config.gridSize;
+        ctx.beginPath();
+        ctx.arc(
+          foodX + config.gridSize / 2,
+          foodY + config.gridSize / 2,
+          config.gridSize / 2 - 2,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+
+        // Draw poops using emoji
+        ctx.font = `${config.gridSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const poop of gameState.poops) {
+          if (poop.shouldRemove) continue;
+
+          const poopX = poop.x * config.gridSize + config.gridSize / 2;
+          const poopY = poop.y * config.gridSize + config.gridSize / 2;
+
+          ctx.fillText("💩", poopX, poopY);
+
+          if (config.shouldPoopDisappear) {
+            const timeSinceCreation = Date.now() - poop.timestamp;
+            const timeRemaining =
+              config.poopDisappearAfterTimeInMs - timeSinceCreation;
+
+            if (
+              timeRemaining < 2000 &&
+              Math.floor(timeSinceCreation / 300) % 2 === 0
+            ) {
+              ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(
+                poop.x * config.gridSize,
+                poop.y * config.gridSize,
+                config.gridSize,
+                config.gridSize
+              );
+            }
+          }
+        }
+
+        // Draw border if in border mode
+        if (config.isBorderMode) {
+          ctx.strokeStyle = "#0f0";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      function placeFood() {
+        let isValidPosition = false;
+        let newFood = { x: 0, y: 0 };
+
+        // Keep trying until a valid position is found
+        while (!isValidPosition) {
+          newFood.x = Math.floor(
+            Math.random() * (config.canvasWidth / config.gridSize)
+          );
+          newFood.y = Math.floor(
+            Math.random() * (config.canvasHeight / config.gridSize)
+          );
+
+          isValidPosition = true;
+
+          // Check collision with snake
+          for (const segment of gameState.snake) {
+            if (segment.x === newFood.x && segment.y === newFood.y) {
+              isValidPosition = false;
+              break;
+            }
+          }
+
+          // Check collision with poops
+          if (isValidPosition) {
+            for (const poop of gameState.poops) {
+              if (
+                poop.x === newFood.x &&
+                poop.y === newFood.y &&
+                !poop.shouldRemove
+              ) {
+                isValidPosition = false;
+                break;
+              }
+            }
+          }
+        }
+
+        gameState.food = newFood;
+      }
+
+      function gameOver(reason) {
+        gameState.isGameOver = true;
+        cancelAnimationFrame(gameState.gameLoop);
+
+        // Show game over screen with random witty message
+        finalScoreElement.textContent = gameState.score;
+        let message = reason;
+        if (reason === "YOU STEPPED IN POOP!") {
+          message =
+            gameOverMessages[
+              Math.floor(Math.random() * gameOverMessages.length)
+            ];
+        }
+        deathReasonElement.textContent = message;
+        gameOverScreen.style.visibility = "visible";
+      }
+
+      function pauseGame() {
+        if (!gameState.isGameOver && gameState.gameLoop) {
+          gameState.isPaused = !gameState.isPaused;
+          if (gameState.isPaused) {
+            this.textContent = "RESUME";
+          } else {
+            this.textContent = "PAUSE";
+            gameLoop();
+          }
+        }
+      }
+
+      restartBtn.addEventListener("click", function () {
+        gameOverScreen.style.visibility = "hidden";
+        initGame();
+      });
+
+      function peekInputQueue() {
+        return gameState.inputQueue.length > 0
+          ? gameState.inputQueue[gameState.inputQueue.length - 1]
+          : gameState.direction;
+      }
+
+      // Keyboard Controls
+      document.addEventListener("keydown", function (event) {
+        const key = event.key.toLowerCase();
+
+        if (key === "p") {
+          pauseGame();
+          return;
+        }
+
+        if (key === "r") {
+          restartBtn.click();
+          return;
+        }
+
+        if (gameState.isGameOver || gameState.isPaused) {
+          return;
+        }
+
+        let newDirection = null;
+        switch (key) {
+          case "arrowup":
+          case "w":
+            newDirection = "up";
+            break;
+          case "arrowright":
+          case "d":
+            newDirection = "right";
+            break;
+          case "arrowdown":
+          case "s":
+            newDirection = "down";
+            break;
+          case "arrowleft":
+          case "a":
+            newDirection = "left";
+            break;
+        }
+
+        if (
+          newDirection &&
+          isValidDirectionChange(peekInputQueue(), newDirection)
+        ) {
+          gameState.inputQueue.push(newDirection);
+        }
+      });
+
+      // Mobile controls
+      const turnLeftBtn = document.getElementById("turnLeftBtn");
+      const turnRightBtn = document.getElementById("turnRightBtn");
+
+      function handleTurn(direction) {
+        const turns = {
+          up: { left: "left", right: "right" },
+          right: { left: "up", right: "down" },
+          down: { left: "right", right: "left" },
+          left: { left: "down", right: "up" },
+        };
+
+        const newDirection = turns[gameState.direction][direction];
+        if (
+          newDirection &&
+          isValidDirectionChange(peekInputQueue(), newDirection)
+        ) {
+          gameState.inputQueue.push(newDirection);
+        }
+      }
+
+      // Update mobile controls to handle both touch and click events
+      function addMobileControl(button, direction) {
+        const handlePress = (e) => {
+          e.preventDefault();
+          handleTurn(direction);
+        };
+
+        button.addEventListener("touchstart", handlePress, { passive: false });
+        button.addEventListener("mousedown", handlePress);
+      }
+
+      addMobileControl(turnLeftBtn, "left");
+      addMobileControl(turnRightBtn, "right");
+
+      // Save settings to localStorage
+      function saveSettings() {
+        const settings = {
+          isBorderMode: config.isBorderMode,
+          difficultyLevel: config.difficultyLevel,
+          difficultyProgressionMultiplier:
+            config.difficultyProgressionMultiplier,
+          poopAfterConsumingItemCount: config.poopAfterConsumingItemCount,
+          shouldPoopDisappear: config.shouldPoopDisappear,
+          poopDisappearAfterTimeInMs: config.poopDisappearAfterTimeInMs,
+          poopTimeThreshold: config.poopTimeThreshold,
+        };
+        localStorage.setItem("poopySnakeSettings", JSON.stringify(settings));
+      }
+
+      // Settings UI handlers
+      const modalOverlay = document.getElementById("modalOverlay");
+      const controlsDiv = document.querySelector(".controls");
+
+      modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.style.display = "none";
+          controlsDiv.style.display = "none";
+          saveSettings();
+        }
+      });
+
+      // Input handling improvements
+      function processInputQueue() {
+        const currentTime = Date.now();
+
+        if (
+          gameState.inputQueue.length > 0 &&
+          currentTime - gameState.lastInputTime >= gameState.inputCooldown
+        ) {
+          const nextDirection = gameState.inputQueue.shift();
+
+          // Only change direction if it's different from the last processed direction
+          if (isValidDirectionChange(gameState.direction, nextDirection)) {
+            gameState.nextDirection = nextDirection;
+            gameState.lastInputTime = currentTime;
+          }
+        }
+      }
+
+      function isValidDirectionChange(currentDir, newDir) {
+        const invalid = {
+          up: "down",
+          down: "up",
+          left: "right",
+          right: "left",
+        };
+        return invalid[currentDir] !== newDir;
+      }
+
+      // Update pooping mechanism
+      function shouldPoop() {
+        return gameState.foodEaten >= config.poopAfterConsumingItemCount;
+      }
+
+      // Welcome screen handling
+      const welcomeScreen = document.getElementById("welcomeScreen");
+      const welcomeStartBtn = document.getElementById("welcomeStartBtn");
+
+      welcomeStartBtn.addEventListener("click", () => {
+        welcomeScreen.style.display = "none";
+        initGame();
+      });
+
+      // Initialize game setup when page loads
+      window.addEventListener("load", function () {
+        gameState.snake = [
+          { x: 5, y: 10 },
+          { x: 4, y: 10 },
+          { x: 3, y: 10 },
+        ];
+        gameState.food = { x: 10, y: 10 };
+        render();
+      });
+    </script>
+  </body>
+</html>
