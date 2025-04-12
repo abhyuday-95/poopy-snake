@@ -826,7 +826,7 @@
           if (i === 0) {
             ctx.fillStyle = "#00ff00"; // Bright green for head
           } else {
-            const shade = 180 - ((i * 5) % 100); // Gradient effect
+            const shade = 180 - (((i < 19 ? i : 19) * 5) % 100); // Gradient effect
             ctx.fillStyle = `rgb(0, ${shade}, 0)`;
           }
 
